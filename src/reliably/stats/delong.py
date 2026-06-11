@@ -31,10 +31,10 @@ def _midrank(x: NDArray[np.float64]) -> NDArray[np.float64]:
     order = np.argsort(x, kind="stable")
     ranked = np.empty(len(x), dtype=np.float64)
     sx = x[order]
-    i, N = 0, len(x)
-    while i < N:
+    i, n_total = 0, len(x)
+    while i < n_total:
         j = i + 1
-        while j < N and sx[j] == sx[i]:
+        while j < n_total and sx[j] == sx[i]:
             j += 1
         # Midrank = average of 1-based positions i+1 .. j
         mid = 0.5 * (i + j - 1) + 1  # 1-based midrank

@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-import reliably as rb
-from reliably.metrics.calibration import ece, smece
+from reliably.metrics.calibration import ece
 from reliably.metrics.discrimination import auroc
 from reliably.metrics.scoring import brier, nll
 

@@ -18,19 +18,13 @@ Quick start::
 
 from __future__ import annotations
 
-# Pre-import the recalibrate subpackage so it is registered in sys.modules BEFORE
-# we bind the `recalibrate` name to the api function.  Once a package is in
-# sys.modules, subsequent `from reliably.recalibrate.xxx import ...` calls inside
-# api.recalibrate() will NOT reset the parent-package attribute — so
-# `rb.recalibrate` stays callable even after the first invocation.
-import reliably.recalibrate as _recalibrate_pkg  # noqa: F401,E402
-
-from reliably.api import compare, evaluate  # noqa: E402
-from reliably.api import recalibrate  # noqa: E402  — overrides subpkg attr above
-from reliably._core.results import CI, ComparisonResult, MetricResult, Report  # noqa: E402
-from reliably import metrics  # noqa: E402
-from reliably import repr as repr  # noqa: E402,A001
-from reliably import llm  # noqa: E402
+# Register the recalibrate subpackage in sys.modules before binding the api function,
+# so rb.recalibrate stays callable after its first invocation.
+import reliably.recalibrate as _recalibrate_pkg  # noqa: F401
+from reliably import llm, metrics
+from reliably import repr as repr  # noqa: A001
+from reliably._core.results import CI, ComparisonResult, MetricResult, Report
+from reliably.api import compare, evaluate, recalibrate
 
 __version__ = "0.1.0"
 

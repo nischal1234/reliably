@@ -31,7 +31,7 @@ class IsotonicCalibrator(Calibrator):
     True
     """
 
-    def fit(self, y_prob: Any, y_true: Any) -> "IsotonicCalibrator":
+    def fit(self, y_prob: Any, y_true: Any) -> IsotonicCalibrator:
         """Fit isotonic regression on calibration split.
 
         Parameters
@@ -46,7 +46,7 @@ class IsotonicCalibrator(Calibrator):
         IsotonicCalibrator
         """
         try:
-            from sklearn.isotonic import IsotonicRegression  # type: ignore[import-not-found]
+            from sklearn.isotonic import IsotonicRegression  # type: ignore
         except ImportError as exc:
             raise ImportError(
                 "scikit-learn is required for IsotonicCalibrator. "

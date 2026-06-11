@@ -20,7 +20,7 @@ def _entropy_normalized(p: NDArray[np.float64], base: int) -> float:
     if len(p) == 0 or base <= 1:
         return 0.0
     h = float(-np.sum(p * np.log(p)))
-    return h / np.log(base)
+    return float(h / np.log(base))
 
 
 def _importance_matrix(
@@ -33,19 +33,19 @@ def _importance_matrix(
     is an optional dep but let's be safe).
     """
     try:
-        from sklearn.ensemble import GradientBoostingRegressor  # type: ignore[import-not-found]
+        from sklearn.ensemble import GradientBoostingRegressor  # type: ignore
     except ImportError:
         return _importance_lasso(z, factors)
 
     d = z.shape[1]
     k = factors.shape[1]
-    R = np.zeros((d, k))
+    importance = np.zeros((d, k))
     for fk in range(k):
         gbr = GradientBoostingRegressor(n_estimators=50, max_depth=4, random_state=0)
         gbr.fit(z, factors[:, fk])
         imp = np.abs(gbr.feature_importances_)
-        R[:, fk] = imp / (imp.sum() + 1e-12)
-    return R
+        importance[:, fk] = imp / (imp.sum() + 1e-12)
+    return importance
 
 
 def _importance_lasso(
@@ -57,12 +57,12 @@ def _importance_lasso(
 
     d = z.shape[1]
     k = factors.shape[1]
-    R = np.zeros((d, k))
+    importance = np.zeros((d, k))
     for fk in range(k):
         coef, _, _, _ = lstsq(z, factors[:, fk])
         imp = np.abs(coef)
-        R[:, fk] = imp / (imp.sum() + 1e-12)
-    return R
+        importance[:, fk] = imp / (imp.sum() + 1e-12)
+    return importance
 
 
 def _dci_from_arrays(
@@ -73,47 +73,44 @@ def _dci_from_arrays(
     d = z.shape[1]
     k = factors.shape[1]
 
-    R = _importance_matrix(z, factors)
+    importance = _importance_matrix(z, factors)
 
-    # Disentanglement: how exclusively does each latent encode one factor
     disentanglement_scores = np.zeros(d)
     rho = np.zeros(d)
     for j in range(d):
-        row_sum = R[j, :].sum()
+        row_sum = importance[j, :].sum()
         rho[j] = row_sum
         if row_sum < 1e-12:
             disentanglement_scores[j] = 0.0
         else:
-            p = R[j, :] / row_sum
+            p = importance[j, :] / row_sum
             disentanglement_scores[j] = 1.0 - _entropy_normalized(p, k)
     rho_total = rho.sum()
     weights = rho / (rho_total + 1e-12)
-    D_score = float(np.sum(weights * disentanglement_scores))
+    d_score = float(np.sum(weights * disentanglement_scores))
 
-    # Completeness: how exclusively is each factor captured by one latent
     completeness_scores = np.zeros(k)
     for fk in range(k):
-        col_sum = R[:, fk].sum()
+        col_sum = importance[:, fk].sum()
         if col_sum < 1e-12:
             completeness_scores[fk] = 0.0
         else:
-            p = R[:, fk] / col_sum
+            p = importance[:, fk] / col_sum
             completeness_scores[fk] = 1.0 - _entropy_normalized(p, d)
-    C_score = float(completeness_scores.mean())
+    c_score = float(completeness_scores.mean())
 
-    # Informativeness: mean R² of factor predictions (using importance model)
     try:
-        from sklearn.ensemble import GradientBoostingRegressor  # type: ignore[import-not-found]
+        from sklearn.ensemble import GradientBoostingRegressor  # type: ignore
         info_scores = []
         for fk in range(k):
             gbr = GradientBoostingRegressor(n_estimators=50, max_depth=4, random_state=0)
             gbr.fit(z, factors[:, fk])
             info_scores.append(gbr.score(z, factors[:, fk]))
-        I_score = float(np.mean(info_scores))
+        info_score = float(np.mean(info_scores))
     except ImportError:
-        I_score = float(R.max(axis=0).mean())
+        info_score = float(importance.max(axis=0).mean())
 
-    return D_score, C_score, I_score
+    return d_score, c_score, info_score
 
 
 def dci(
@@ -166,9 +163,9 @@ def dci(
         f_np = f_np[:, None]
     n = z_np.shape[0]
 
-    D, C, I = _dci_from_arrays(z_np, f_np)
-    point = (D + C) / 2.0
-    extra = {"disentanglement": D, "completeness": C, "informativeness": I}
+    d_val, c_val, info_val = _dci_from_arrays(z_np, f_np)
+    point = (d_val + c_val) / 2.0
+    extra = {"disentanglement": d_val, "completeness": c_val, "informativeness": info_val}
 
     if ci is None:
         return MetricResult(name="DCI", value=point, ci=None, n=n, extra=extra)

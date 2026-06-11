@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
-import reliably as rb
 from reliably.metrics.calibration import (
     adaptive_ece,
     classwise_ece,

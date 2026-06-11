@@ -6,18 +6,14 @@ from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.stats import norm
 
 from reliably._core.backend import (
     adaptive_bins,
     bin_stats,
-    clip_probs,
     equal_width_bins,
-    make_rng,
     to_numpy,
 )
-from reliably._core.results import CI, MetricResult
-from reliably.stats.bootstrap import vectorized_bootstrap_ci
+from reliably._core.results import MetricResult
 
 __all__ = [
     "ece",
@@ -134,10 +130,7 @@ def ece(
     if ci is None:
         return MetricResult(name=name, value=point, ci=None, n=n)
 
-    ci_obj = vectorized_bootstrap_ci if False else None  # use generic for ECE
-
-    # Use per-sample absolute gap as the data for vectorized bootstrap
-    # For binned metrics we fall back to the generic estimator
+    # Use the generic estimator for binned metrics
     from reliably.stats.bootstrap import bootstrap_ci
 
     ci_result = bootstrap_ci(
@@ -434,11 +427,10 @@ def smece(
     def _smece_from_arrays(c: NDArray[np.float64], a: NDArray[np.float64]) -> float:
         nn = len(c)
         h = bandwidth if bandwidth is not None else max(0.1 * nn ** (-0.2), 0.01)
-        # Kernel matrix: nn x nn, K_h(c_i - c_j)
-        diff = c[:, None] - c[None, :]   # (nn, nn)
-        K = np.exp(-(diff**2) / (2.0 * h**2))
-        K_sum = K.sum(axis=1)            # normalizing constant per query point
-        r_hat = K @ a / K_sum            # kernel regression estimate
+        diff = c[:, None] - c[None, :]
+        k_mat = np.exp(-(diff**2) / (2.0 * h**2))
+        k_sum = k_mat.sum(axis=1)
+        r_hat = k_mat @ a / k_sum
         return float(np.abs(r_hat - c).mean())
 
     point = _smece_from_arrays(conf, acc)
@@ -529,7 +521,7 @@ def classwise_ece(
             )
             bc, ba, bn = bin_stats(conf_k, acc_k, edges)
             total += _ece_from_bins(bc, ba, bn, nn)
-        return total / k
+        return float(total / k)
 
     point = _cw_ece(np.arange(n))
 

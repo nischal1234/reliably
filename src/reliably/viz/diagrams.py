@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     import matplotlib.axes
@@ -23,9 +22,9 @@ def reliability_diagram(
     band: bool = True,
     n_bootstrap: int = 200,
     seed: int = 0,
-    ax: "matplotlib.axes.Axes | None" = None,
+    ax: matplotlib.axes.Axes | None = None,
     title: str = "Reliability Diagram",
-) -> "matplotlib.axes.Axes":
+) -> matplotlib.axes.Axes:
     """Plot a reliability diagram with optional bootstrap confidence band.
 
     The smooth kernel curve (smECE) is plotted with a shaded bootstrap band.
@@ -93,21 +92,20 @@ def reliability_diagram(
     h = max(0.1 * n ** (-0.2), 0.01)
     c_grid = np.linspace(0.0, 1.0, 200)
     diff = c_grid[:, None] - conf[None, :]
-    K = np.exp(-(diff**2) / (2.0 * h**2))
-    K_sum = K.sum(axis=1)
-    r_hat = K @ acc / K_sum
+    k_mat = np.exp(-(diff**2) / (2.0 * h**2))
+    k_sum = k_mat.sum(axis=1)
+    r_hat = k_mat @ acc / k_sum
 
     ax.plot(c_grid, r_hat, color="royalblue", linewidth=2.0, label="Kernel estimate")
 
-    # --- Bootstrap confidence band ---
     if band:
         idx_matrix = bootstrap_replicate_indices(n, n_bootstrap, seed=seed)
         boot_curves = np.empty((n_bootstrap, len(c_grid)))
         for b in range(n_bootstrap):
             idx = idx_matrix[b]
             c_b, a_b = conf[idx], acc[idx]
-            K_b = np.exp(-((c_grid[:, None] - c_b[None, :]) ** 2) / (2.0 * h**2))
-            boot_curves[b] = K_b @ a_b / K_b.sum(axis=1)
+            k_b = np.exp(-((c_grid[:, None] - c_b[None, :]) ** 2) / (2.0 * h**2))
+            boot_curves[b] = k_b @ a_b / k_b.sum(axis=1)
         lo = np.percentile(boot_curves, 2.5, axis=0)
         hi = np.percentile(boot_curves, 97.5, axis=0)
         ax.fill_between(c_grid, lo, hi, alpha=0.25, color="royalblue", label="95% CI band")
@@ -132,9 +130,9 @@ def confidence_histogram(
     y_prob: Any,
     *,
     n_bins: int = 20,
-    ax: "matplotlib.axes.Axes | None" = None,
+    ax: matplotlib.axes.Axes | None = None,
     title: str = "Confidence Histogram",
-) -> "matplotlib.axes.Axes":
+) -> matplotlib.axes.Axes:
     """Plot a histogram of top-label confidence scores.
 
     Parameters

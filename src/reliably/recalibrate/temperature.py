@@ -15,14 +15,14 @@ __all__ = ["TemperatureScaler"]
 
 
 class TemperatureScaler(Calibrator):
-    """Calibrate by dividing logits by a scalar temperature T > 0.
+    """Calibrate by dividing logits by a scalar temperature > 0.
 
-    Fits T by minimizing NLL on the calibration split using golden-section
-    search.  Preserves the argmax (accuracy unchanged).
+    Fits temperature by minimizing NLL on the calibration split using
+    golden-section search.  Preserves the argmax (accuracy unchanged).
 
     Parameters
     ----------
-    T_bounds : tuple[float, float]
+    temp_bounds : tuple[float, float]
         Search bounds for temperature.
 
     Examples
@@ -42,10 +42,10 @@ class TemperatureScaler(Calibrator):
     T_: float
     logits_: NDArray[np.float64]
 
-    def __init__(self, T_bounds: tuple[float, float] = (0.01, 20.0)) -> None:
-        self.T_bounds = T_bounds
+    def __init__(self, temp_bounds: tuple[float, float] = (0.01, 20.0)) -> None:
+        self.T_bounds = temp_bounds
 
-    def fit(self, y_prob: Any, y_true: Any) -> "TemperatureScaler":
+    def fit(self, y_prob: Any, y_true: Any) -> TemperatureScaler:
         """Fit temperature on calibration data.
 
         Parameters
@@ -73,14 +73,12 @@ class TemperatureScaler(Calibrator):
         logits = np.log(p_clipped)
         self.logits_ = logits
 
-        k = y_prob_np.shape[1]
-
-        def nll_at_T(T: float) -> float:
-            probs = softmax(logits / T)
+        def nll_at_temp(temp: float) -> float:
+            probs = softmax(logits / temp)
             p_correct = clip_probs(probs[np.arange(n), y_true_np])
             return float(-np.log(p_correct).mean())
 
-        result = minimize_scalar(nll_at_T, bounds=self.T_bounds, method="bounded")
+        result = minimize_scalar(nll_at_temp, bounds=self.T_bounds, method="bounded")
         self.T_ = float(result.x)
         self._fitted = True
         return self

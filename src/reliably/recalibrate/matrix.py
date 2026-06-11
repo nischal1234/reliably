@@ -35,7 +35,7 @@ class VectorScaler(Calibrator):
     W_: NDArray[np.float64]
     b_: NDArray[np.float64]
 
-    def fit(self, y_prob: Any, y_true: Any) -> "VectorScaler":
+    def fit(self, y_prob: Any, y_true: Any) -> VectorScaler:
         """Fit per-class vector scaling.
 
         Parameters
@@ -60,9 +60,9 @@ class VectorScaler(Calibrator):
         logits = np.log(clip_probs(y_prob_np))
 
         def neg_nll(params: NDArray[np.float64]) -> float:
-            W = params[:k]
+            weights = params[:k]
             b = params[k:]
-            z = logits * W[None, :] + b[None, :]
+            z = logits * weights[None, :] + b[None, :]
             probs = softmax(z)
             p_correct = clip_probs(probs[np.arange(n), y_true_np])
             return float(-np.log(p_correct).mean())
@@ -121,7 +121,7 @@ class MatrixScaler(Calibrator):
     W_: NDArray[np.float64]
     b_: NDArray[np.float64]
 
-    def fit(self, y_prob: Any, y_true: Any) -> "MatrixScaler":
+    def fit(self, y_prob: Any, y_true: Any) -> MatrixScaler:
         """Fit full matrix scaling.
 
         Parameters
@@ -146,9 +146,9 @@ class MatrixScaler(Calibrator):
         logits = np.log(clip_probs(y_prob_np))
 
         def neg_nll(params: NDArray[np.float64]) -> float:
-            W = params[: k * k].reshape(k, k)
+            weight_mat = params[: k * k].reshape(k, k)
             b = params[k * k :]
-            z = logits @ W.T + b[None, :]
+            z = logits @ weight_mat.T + b[None, :]
             probs = softmax(z)
             p_correct = clip_probs(probs[np.arange(n), y_true_np])
             return float(-np.log(p_correct).mean())

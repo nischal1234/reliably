@@ -42,7 +42,7 @@ class BetaCalibrator(Calibrator):
     def __init__(self, constrain_ab: bool = True) -> None:
         self.constrain_ab = constrain_ab
 
-    def fit(self, y_prob: Any, y_true: Any) -> "BetaCalibrator":
+    def fit(self, y_prob: Any, y_true: Any) -> BetaCalibrator:
         """Fit beta calibration on calibration split.
 
         Parameters

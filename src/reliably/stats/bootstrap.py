@@ -69,8 +69,8 @@ def _bca_ci(
     den = 6.0 * float(np.sum(diff**2) ** 1.5) + 1e-12
     a = num / den
 
-    zL = norm.ppf(alpha / 2)
-    zU = norm.ppf(1.0 - alpha / 2)
+    z_lo = norm.ppf(alpha / 2)
+    z_hi = norm.ppf(1.0 - alpha / 2)
 
     def adj(zq: float) -> float:
         denom = 1.0 - a * (z0 + zq)
@@ -78,8 +78,8 @@ def _bca_ci(
             return float(norm.cdf(z0 + zq))
         return float(norm.cdf(z0 + (z0 + zq) / denom))
 
-    alpha1 = adj(zL)
-    alpha2 = adj(zU)
+    alpha1 = adj(z_lo)
+    alpha2 = adj(z_hi)
     # Clamp to valid quantile range
     alpha1 = float(np.clip(alpha1, 1e-6, 1.0 - 1e-6))
     alpha2 = float(np.clip(alpha2, 1e-6, 1.0 - 1e-6))

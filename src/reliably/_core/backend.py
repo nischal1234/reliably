@@ -46,7 +46,7 @@ def to_numpy(x: Any, *, dtype: type = np.float64) -> NDArray[np.float64]:
         x = x.numpy()
     # Handle jax arrays
     if hasattr(x, "__jax_array__"):
-        import jax.numpy as jnp  # type: ignore[import-not-found]
+        import jax.numpy as jnp  # type: ignore
 
         x = jnp.asarray(x)
     return np.asarray(x, dtype=dtype)

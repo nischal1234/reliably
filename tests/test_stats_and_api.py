@@ -7,7 +7,6 @@ import pytest
 
 import reliably as rb
 
-
 # ---------------------------------------------------------------------------
 # stats/tests.py
 # ---------------------------------------------------------------------------
@@ -395,8 +394,9 @@ class TestValidation:
             prepare_inputs(np.array([0, 1]), np.array([0.5, 0.5, 0.5]))
 
     def test_auto_normalize(self) -> None:
-        from reliably._core.validation import prepare_inputs
         import warnings
+
+        from reliably._core.validation import prepare_inputs
         y = np.array([0, 1])
         p = np.array([[0.4, 0.7], [0.3, 0.6]])
         with warnings.catch_warnings(record=True):

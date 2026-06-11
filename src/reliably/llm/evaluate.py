@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
-from numpy.typing import NDArray
 
 from reliably._core.results import Report
 from reliably.llm.verbalized import parse_verbalized_batch
@@ -65,7 +64,6 @@ def evaluate(
     >>> "smECE" in report.metrics
     True
     """
-    import numpy as np
 
     y_true = np.asarray(correct, dtype=np.int64)
 

@@ -50,7 +50,7 @@ def _factorvae_from_arrays(
 
     # Build majority-vote classifier: for each (voted_latent, factor) -> factor
     # Use a simple lookup: most common factor per latent vote
-    from collections import defaultdict, Counter
+    from collections import Counter, defaultdict
 
     vote_dict: dict[int, list[int]] = defaultdict(list)
     for latent_vote, factor in votes:

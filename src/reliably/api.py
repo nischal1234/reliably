@@ -86,9 +86,7 @@ def evaluate(
     else:
         metric_names = list(metrics)
 
-    common_kw = dict(
-        n_bins=n_bins, ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed
-    )
+    from typing import Literal
 
     from reliably import metrics as m_mod
 
@@ -97,33 +95,56 @@ def evaluate(
     for name in metric_names:
         lname = name.lower().replace("-", "_")
         if lname in ("ece", "equal_width_ece"):
-            results["ECE"] = m_mod.ece(y_true_np, y_prob_np, binning="equal_width", **common_kw)
+            results["ECE"] = m_mod.ece(
+                y_true_np, y_prob_np, binning="equal_width",
+                n_bins=n_bins, ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed,
+            )
         elif lname in ("adaptive_ece", "aece"):
-            results["adaptive_ECE"] = m_mod.adaptive_ece(y_true_np, y_prob_np, **common_kw)
-        elif lname in ("smece", "smece", "smooth_ece"):
-            kw = dict(ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed)
-            results["smECE"] = m_mod.smece(y_true_np, y_prob_np, **kw)
+            results["adaptive_ECE"] = m_mod.adaptive_ece(
+                y_true_np, y_prob_np,
+                n_bins=n_bins, ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed,
+            )
+        elif lname in ("smece", "smooth_ece"):
+            results["smECE"] = m_mod.smece(
+                y_true_np, y_prob_np,
+                ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed,
+            )
         elif lname in ("debiased_ece", "debece"):
-            results["debiased_ECE"] = m_mod.debiased_ece(y_true_np, y_prob_np,
-                                                          binning=binning, **common_kw)
+            results["debiased_ECE"] = m_mod.debiased_ece(
+                y_true_np, y_prob_np, binning=binning,
+                n_bins=n_bins, ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed,
+            )
         elif lname == "mce":
-            results["MCE"] = m_mod.mce(y_true_np, y_prob_np, binning=binning, **common_kw)
+            results["MCE"] = m_mod.mce(
+                y_true_np, y_prob_np, binning=binning,
+                n_bins=n_bins, ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed,
+            )
         elif lname == "brier":
-            kw2 = dict(decompose=True, n_bins=n_bins, ci=ci,
-                       n_bootstrap=n_bootstrap, level=level, seed=seed)
-            results["Brier"] = m_mod.brier(y_true_np, y_prob_np, **kw2)
+            results["Brier"] = m_mod.brier(
+                y_true_np, y_prob_np, decompose=True,
+                n_bins=n_bins, ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed,
+            )
         elif lname == "nll":
-            kw3 = dict(ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed)
-            results["NLL"] = m_mod.nll(y_true_np, y_prob_np, **kw3)
+            results["NLL"] = m_mod.nll(
+                y_true_np, y_prob_np,
+                ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed,
+            )
         elif lname == "auroc":
             if resolved_task == "binary":
                 s = y_prob_np if y_prob_np.ndim == 1 else y_prob_np[:, 1]
-                kw4 = dict(ci=ci, level=level, n_bootstrap=n_bootstrap, seed=seed)
-                results["AUROC"] = m_mod.auroc(y_true_np, s, **kw4)
+                results["AUROC"] = m_mod.auroc(
+                    y_true_np, s,
+                    ci=ci, level=level, n_bootstrap=n_bootstrap, seed=seed,
+                )
         elif lname in ("cwece", "classwise_ece"):
-            results["cwECE"] = m_mod.classwise_ece(y_true_np, y_prob_np, binning=binning,
-                                                    **common_kw)
+            results["cwECE"] = m_mod.classwise_ece(
+                y_true_np, y_prob_np, binning=binning,
+                n_bins=n_bins, ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed,
+            )
 
+    task_literal: Literal["binary", "multiclass"] = (
+        "binary" if resolved_task == "binary" else "multiclass"
+    )
     meta: dict[str, object] = {
         "seed": seed,
         "n_bootstrap": n_bootstrap,
@@ -132,7 +153,7 @@ def evaluate(
         "ci": ci,
         "level": level,
     }
-    return Report(task=resolved_task, metrics=results, n=n, meta=meta)
+    return Report(task=task_literal, metrics=results, n=n, meta=meta)
 
 
 def compare(
@@ -241,7 +262,6 @@ def compare(
         if sb.ndim == 2:
             sb = sb[:, 1]
         delta, p_value, se = delong_test(sa, sb, y_true_np)
-        z = abs(delta) / (se + 1e-12)
         from scipy.stats import norm
         ci_low = delta - norm.ppf((1 + level) / 2) * se
         ci_high = delta + norm.ppf((1 + level) / 2) * se
@@ -266,8 +286,8 @@ def compare(
             significant=sig, correction=correction,
         )
 
-    from reliably.stats.tests import paired_bootstrap_test
     from reliably._core.backend import to_numpy as _to_numpy
+    from reliably.stats.tests import paired_bootstrap_test
 
     y_true_np = _to_numpy(y_true, dtype=np.float64).astype(np.int64)
     n = len(y_true_np)
@@ -314,7 +334,7 @@ def compare(
     )
 
 
-def _find_metric_key(report: "Report", upper: str, lower: str) -> str | None:
+def _find_metric_key(report: Report, upper: str, lower: str) -> str | None:
     """Find a metric key in a Report by name (case-insensitive)."""
     for key in report.metrics:
         if key.upper() == upper or key.lower() == lower:
@@ -357,12 +377,12 @@ def recalibrate(
     >>> cal_probs.shape == p.shape
     True
     """
-    from reliably.recalibrate.temperature import TemperatureScaler
-    from reliably.recalibrate.platt import PlattScaler
-    from reliably.recalibrate.isotonic import IsotonicCalibrator
     from reliably.recalibrate.beta import BetaCalibrator
     from reliably.recalibrate.histogram import HistogramCalibrator
+    from reliably.recalibrate.isotonic import IsotonicCalibrator
     from reliably.recalibrate.matrix import MatrixScaler, VectorScaler
+    from reliably.recalibrate.platt import PlattScaler
+    from reliably.recalibrate.temperature import TemperatureScaler
 
     method_map = {
         "temperature": TemperatureScaler,

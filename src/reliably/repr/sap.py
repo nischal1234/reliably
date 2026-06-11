@@ -44,21 +44,19 @@ def _sap_from_arrays(
     d = z.shape[1]
     k = factors.shape[1]
 
-    # Score matrix S[j, fk] = R² of latent j predicting factor fk
-    S = np.zeros((d, k))
+    score_mat = np.zeros((d, k))
     for j in range(d):
         for fk in range(k):
-            S[j, fk] = _linear_r2(z[:, j], factors[:, fk])
+            score_mat[j, fk] = _linear_r2(z[:, j], factors[:, fk])
 
-    # SAP = mean over factors of (top1 - top2) score
     total = 0.0
     for fk in range(k):
-        col = np.sort(S[:, fk])
+        col = np.sort(score_mat[:, fk])
         if len(col) >= 2:
             total += col[-1] - col[-2]
         else:
             total += col[-1]
-    return total / k
+    return float(total / k)
 
 
 def sap(

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 
 def _make_latents(n: int = 200, d: int = 4, k: int = 3, seed: int = 0) -> tuple[

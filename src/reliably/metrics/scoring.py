@@ -11,7 +11,6 @@ from reliably._core.backend import (
     adaptive_bins,
     bin_stats,
     clip_probs,
-    equal_width_bins,
     to_numpy,
 )
 from reliably._core.results import MetricResult

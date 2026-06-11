@@ -42,7 +42,7 @@ class HistogramCalibrator(Calibrator):
         self.n_bins = n_bins
         self.binning = binning
 
-    def fit(self, y_prob: Any, y_true: Any) -> "HistogramCalibrator":
+    def fit(self, y_prob: Any, y_true: Any) -> HistogramCalibrator:
         """Fit histogram binning on calibration split.
 
         Parameters

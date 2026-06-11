@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from reliably._core.backend import make_rng, to_numpy
+from reliably._core.backend import to_numpy
 from reliably._core.results import MetricResult
 from reliably.stats.bootstrap import bootstrap_ci
 
@@ -68,7 +68,7 @@ def _mig_from_arrays(
         else:
             gap = top2[-1]
         total += gap / h_fk
-    return total / k
+    return float(total / k)
 
 
 def mig(

@@ -8,8 +8,6 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from reliably._core.backend import to_numpy
-
 __all__ = ["Calibrator"]
 
 
@@ -26,7 +24,7 @@ class Calibrator(ABC):
     _fitted: bool = False
 
     @abstractmethod
-    def fit(self, y_prob: Any, y_true: Any) -> "Calibrator":
+    def fit(self, y_prob: Any, y_true: Any) -> Calibrator:
         """Fit the calibrator on a calibration split.
 
         Parameters

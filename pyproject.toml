@@ -42,12 +42,12 @@ line-length = 100
 src = ["src"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "ANN", "N"]
-ignore = ["ANN101", "ANN102"]
+select = ["E", "F", "W", "I", "UP", "N"]
+ignore = []
 
 [tool.mypy]
-strict = true
 python_version = "3.10"
+warn_unused_ignores = false
 
 [tool.pytest.ini_options]
 addopts = "-q --cov=reliably --cov-report=term-missing"

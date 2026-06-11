@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from reliably._core.results import MetricResult
 from reliably.repr.dci import dci
 from reliably.repr.factorvae import factorvae_metric
 from reliably.repr.irs import irs
@@ -20,7 +21,7 @@ def disentanglement(
     n_bootstrap: int = 200,
     level: float = 0.95,
     seed: int = 0,
-) -> dict[str, object]:
+) -> dict[str, MetricResult]:
     """Compute a suite of disentanglement metrics.
 
     Parameters
@@ -55,8 +56,6 @@ def disentanglement(
     >>> "mig" in results
     True
     """
-    from reliably._core.results import MetricResult
-
     kw = dict(ci=ci, n_bootstrap=n_bootstrap, level=level, seed=seed)
     results: dict[str, MetricResult] = {}
     if "mig" in metrics:

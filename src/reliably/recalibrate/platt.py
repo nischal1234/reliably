@@ -9,7 +9,7 @@ from numpy.typing import NDArray
 from scipy.optimize import minimize
 from scipy.special import expit
 
-from reliably._core.backend import clip_probs, to_numpy
+from reliably._core.backend import to_numpy
 from reliably.recalibrate.base import Calibrator
 
 __all__ = ["PlattScaler"]
@@ -37,7 +37,7 @@ class PlattScaler(Calibrator):
     A_: float
     B_: float
 
-    def fit(self, y_prob: Any, y_true: Any) -> "PlattScaler":
+    def fit(self, y_prob: Any, y_true: Any) -> PlattScaler:
         """Fit logistic regression on calibration split.
 
         Parameters
@@ -57,8 +57,8 @@ class PlattScaler(Calibrator):
             s = s[:, 1]
 
         def neg_log_lik(params: NDArray[np.float64]) -> float:
-            A, B = params
-            p = expit(A * s + B)
+            a_coef, b_coef = params
+            p = expit(a_coef * s + b_coef)
             p = np.clip(p, 1e-12, 1.0 - 1e-12)
             return float(-np.sum(y * np.log(p) + (1.0 - y) * np.log(1.0 - p)))
 
