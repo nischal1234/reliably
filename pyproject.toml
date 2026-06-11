@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "reliably"
+name = "reliably-metrics"
 version = "0.1.0"
 description = "Statistically rigorous model trust evaluation: calibration, uncertainty, and representation quality — with CIs and significance tests on every metric."
 readme = "README.md"
