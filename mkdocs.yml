@@ -1,0 +1,68 @@
+site_name: reliably
+site_description: Statistically rigorous model reliability evaluation — every metric carries a confidence interval, every comparison carries a significance test.
+site_url: https://reliably.readthedocs.io
+repo_url: https://github.com/nischal1234/reliably
+repo_name: nischal1234/reliably
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            show_source: true
+            show_root_heading: true
+            members_order: source
+
+nav:
+  - Home: index.md
+  - User Guide:
+      - Quickstart: guide/quickstart.md
+      - Metrics: guide/metrics.md
+      - Calibration: guide/calibration.md
+      - Comparison: guide/comparison.md
+  - API Reference:
+      - Top-level API: api/top_level.md
+      - Metrics: api/metrics.md
+      - Recalibrate: api/recalibrate.md
+      - Stats: api/stats.md
+      - Representation: api/repr.md
+      - Viz: api/viz.md
+      - Report: api/report.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true

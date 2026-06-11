@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Literal
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    import matplotlib.axes
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,10 +106,105 @@ class Report:
         return self.metrics[name]
 
     def summary(self) -> str:
+        """Return a plain-text summary of all metrics."""
         lines = [f"Report(task={self.task}, n={self.n})"]
         for mr in self.metrics.values():
             lines.append(f"  {mr}")
         return "\n".join(lines)
+
+    def to_html(self, path: str | Path | None = None) -> str:
+        """Render the report to HTML.
+
+        Requires the ``report`` extra (``pip install reliably[report]``).
+
+        Parameters
+        ----------
+        path : str | Path | None
+            If given, also write the HTML to this file.
+
+        Returns
+        -------
+        str
+            HTML string.
+
+        Examples
+        --------
+        >>> r = Report(task="binary", metrics={}, n=100, meta={})
+        >>> html = r.to_html()
+        >>> "<html" in html
+        True
+        """
+        from reliably.report.render import to_html as _to_html
+
+        return _to_html(self, path=path)
+
+    def to_markdown(self) -> str:
+        """Render the report to a Markdown table.
+
+        Returns
+        -------
+        str
+            Markdown string.
+
+        Examples
+        --------
+        >>> r = Report(task="binary", metrics={}, n=100, meta={})
+        >>> "| Metric" in r.to_markdown()
+        True
+        """
+        from reliably.report.render import to_markdown as _to_markdown
+
+        return _to_markdown(self)
+
+    def reliability_diagram(
+        self,
+        y_true: Any,
+        y_prob: Any,
+        *,
+        n_bins: int = 15,
+        binning: str = "adaptive",
+        band: bool = True,
+        n_bootstrap: int = 200,
+        seed: int = 0,
+        ax: matplotlib.axes.Axes | None = None,
+        title: str = "Reliability Diagram",
+    ) -> matplotlib.axes.Axes:
+        """Plot a reliability diagram for this report's data.
+
+        Requires the ``viz`` extra (``pip install reliably[viz]``).
+
+        Parameters
+        ----------
+        y_true : array-like
+            Integer labels.
+        y_prob : array-like
+            Predicted probabilities.
+        n_bins : int
+            Number of bins for the scatter overlay.
+        binning : str
+            ``"equal_width"`` or ``"adaptive"``.
+        band : bool
+            Whether to draw the bootstrap confidence band.
+        n_bootstrap : int
+            Bootstrap resamples for the confidence band.
+        seed : int
+            RNG seed.
+        ax : matplotlib.axes.Axes | None
+            Existing axes to draw on; creates a new figure if ``None``.
+        title : str
+            Plot title.
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+        """
+        from reliably.viz.diagrams import reliability_diagram as _rd
+
+        return _rd(
+            y_true, y_prob,
+            n_bins=n_bins, binning=binning, band=band,
+            n_bootstrap=n_bootstrap, seed=seed, ax=ax, title=title,
+        )
 
 
 @dataclass(frozen=True, slots=True)
