@@ -115,7 +115,7 @@ def equal_width_bins(n_bins: int = 15) -> NDArray[np.float64]:
     >>> equal_width_bins(5).tolist()
     [0.0, 0.2, 0.4, 0.6000000000000001, 0.8, 1.0]
     """
-    return np.linspace(0.0, 1.0, n_bins + 1)
+    return np.linspace(0.0, 1.0, n_bins + 1).astype(np.float64)
 
 
 def adaptive_bins(
@@ -145,8 +145,7 @@ def adaptive_bins(
     6
     """
     quantiles = np.linspace(0.0, 100.0, n_bins + 1)
-    edges = np.percentile(confidences, quantiles)
-    # Ensure strict monotonicity at boundaries
+    edges: NDArray[np.float64] = np.percentile(confidences, quantiles).astype(np.float64)
     edges[0] = 0.0
     edges[-1] = 1.0
     return edges
