@@ -106,8 +106,6 @@ pip install reliably[all]
 ## Links
 
 - [Documentation](https://reliably.readthedocs.io)
-- [Technical Design Document](reliably_technical_design_document.md)
-- [Changelog](CHANGELOG.md)
 
 ---
 
