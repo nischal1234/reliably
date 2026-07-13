@@ -32,6 +32,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.0] — TBD
 
-First tagged release. See `CLAUDE.md §10` for the definition of done.
